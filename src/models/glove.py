@@ -1,8 +1,9 @@
-from utils.loader import load_object, save_object
-from utils.logger import Logger
+from services.common import load_object, save_object
+from services.logger import Logger
 import constants.main_constants as const
 
 import pandas as pd
+import numpy as np
 import os.path
 import csv
 
@@ -17,6 +18,11 @@ class Glove:
             self.words = pd.read_table(file_name, sep=" ", index_col=0, header=None, quoting=csv.QUOTE_NONE)
             save_object(self.words, const.GLOVE_SAVE)
         self.logger.end_timer()
+        self.length = self.words.shape[1]
 
     def vector(self, word):
-        return self.words.loc[word].as_matrix()
+        try:
+            vec = self.words.loc[word].as_matrix()
+        except KeyError:
+            vec = np.zeros([self.length, ])
+        return vec
