@@ -8,7 +8,7 @@ class NLQModel(nn.Module):
     def forward(self, *input):
         pass
 
-    def __init__(self, embedding, args, token_to_index=None):
+    def __init__(self, embedding, args, token_to_index=None, token_weights=None):
         super(NLQModel, self).__init__()
         self.embedding = embedding
         self.args = args
@@ -16,11 +16,11 @@ class NLQModel(nn.Module):
 
         if args.train_embedding:
             self.aggregate_embedding_layer = EmbeddingLayer(embedding, emb_size=args.emb_size, gpu=args.gpu, train=True,
-                                                            token_to_index=token_to_index)
+                                                            token_to_index=token_to_index, token_weights=token_weights)
             self.select_embedding_layer = EmbeddingLayer(embedding, emb_size=args.emb_size, gpu=args.gpu, train=True,
-                                                         token_to_index=token_to_index)
+                                                         token_to_index=token_to_index, token_weights=token_weights)
             self.condition_embedding_layer = EmbeddingLayer(embedding, emb_size=args.emb_size, gpu=args.gpu, train=True,
-                                                            token_to_index=token_to_index)
+                                                            token_to_index=token_to_index, token_weights=token_weights)
         else:
             self.embedding_layer = EmbeddingLayer(embedding, emb_size=args.emb_size, gpu=args.gpu)
 
@@ -33,3 +33,5 @@ class NLQModel(nn.Module):
 
         if args.gpu:
             self.cuda()
+
+# TODO: Make all Predictors, forward function and loss.

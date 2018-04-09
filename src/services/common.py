@@ -1,5 +1,8 @@
 import json
 import pickle
+import os.path
+
+import numpy as np
 
 import constants.main_constants as const
 
@@ -32,19 +35,30 @@ def load_data(data_dir, split='train', debug=False):
     return data, table_data, db_path
 
 
-def make_token_to_index(data, use_extra_tokens=True):
-    idx = 0
-    token_to_index = dict()
-    if use_extra_tokens:
-        token_to_index[const.UNK_TOKEN] = const.UNK_IDX
-        token_to_index[const.BEG_TOKEN] = const.BEG_IDX
-        token_to_index[const.END_TOKEN] = const.END_IDX
-        idx += 3
+def make_token_to_index(data, embedding, use_extra_tokens=True, load_if_exists=False):
+    if load_if_exists and os.path.exists(const.TOKEN_TO_IDX_SAVE) and os.path.exists(const.TOKEN_WEIGHTS_SAVE):
+        token_to_index = load_object(const.TOKEN_TO_IDX_SAVE)
+        token_weights = load_object(const.TOKEN_WEIGHTS_SAVE)
+    else:
+        idx = 0
+        token_to_index = dict()
+        token_weights = []
+        if use_extra_tokens:
+            token_to_index[const.UNK_TOKEN] = const.UNK_IDX
+            token_weights.append(embedding.vector(const.UNK_TOKEN))
+            token_to_index[const.BEG_TOKEN] = const.BEG_IDX
+            token_weights.append(embedding.vector(const.BEG_TOKEN))
+            token_to_index[const.END_TOKEN] = const.END_IDX
+            token_weights.append(embedding.vector(const.END_TOKEN))
+            idx += 3
 
-    for d in data:
-        for token in d['question_tok']:
-            if token not in token_to_index:
-                token_to_index[token] = idx
-                idx += 1
-    save_object(token_to_index, const.TOKEN_TO_IDX_SAVE)
-    return token_to_index
+        for d in data:
+            for token in d['question_tok']:
+                if token not in token_to_index:
+                    token_to_index[token] = idx
+                    token_weights.append(embedding.vector(token))
+                    idx += 1
+        token_weights = np.array(token_weights)
+        save_object(token_to_index, const.TOKEN_TO_IDX_SAVE)
+        save_object(token_weights, const.TOKEN_WEIGHTS_SAVE)
+    return token_to_index, token_weights

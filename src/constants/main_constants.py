@@ -7,6 +7,7 @@ GLOVE_SAVE = '../glove/loaded.pkl'
 GLOVE_TOKENS = 6  # Billion
 EMBEDDING_SIZE = 50  # Dimensions
 TOKEN_TO_IDX_SAVE = '../data/token_to_index.pkl'
+TOKEN_WEIGHTS_SAVE = '../data/token_weights.pkl'
 UNK_TOKEN = '<UNK>'
 BEG_TOKEN = '<BEG'
 END_TOKEN = '<END>'
