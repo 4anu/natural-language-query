@@ -3,7 +3,7 @@ BATCH_SIZE = 64
 
 # Glove and Embedding Constants
 GLOVE_TOKENS = 6  # Billion
-EMBEDDING_SIZE = 300  # Dimensions
+EMBEDDING_SIZE = 50  # Dimensions
 GLOVE = '../glove/glove.{}B.{}d.txt'.format(GLOVE_TOKENS, EMBEDDING_SIZE)
 GLOVE_SAVE = '../glove/loaded.pkl'
 TOKEN_TO_IDX_SAVE = '../data/token_to_index.pkl'

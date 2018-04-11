@@ -14,15 +14,12 @@ class NLQModel(nn.Module):
         self.args = args
         self.token_to_index = token_to_index
 
-        if args.train_embedding:
-            self.aggregate_embedding_layer = EmbeddingLayer(embedding, emb_size=args.emb_size, gpu=args.gpu, train=True,
-                                                            token_to_index=token_to_index, token_weights=token_weights)
-            self.select_embedding_layer = EmbeddingLayer(embedding, emb_size=args.emb_size, gpu=args.gpu, train=True,
-                                                         token_to_index=token_to_index, token_weights=token_weights)
-            self.condition_embedding_layer = EmbeddingLayer(embedding, emb_size=args.emb_size, gpu=args.gpu, train=True,
-                                                            token_to_index=token_to_index, token_weights=token_weights)
-        else:
-            self.embedding_layer = EmbeddingLayer(embedding, emb_size=args.emb_size, gpu=args.gpu)
+        self.aggregate_embedding_layer = EmbeddingLayer(embedding, emb_size=args.emb_size, gpu=args.gpu, train=True,
+                                                        token_to_index=token_to_index, token_weights=token_weights)
+        self.select_embedding_layer = EmbeddingLayer(embedding, emb_size=args.emb_size, gpu=args.gpu, train=True,
+                                                     token_to_index=token_to_index, token_weights=token_weights)
+        self.condition_embedding_layer = EmbeddingLayer(embedding, emb_size=args.emb_size, gpu=args.gpu, train=True,
+                                                        token_to_index=token_to_index, token_weights=token_weights)
 
         self.aggregate_predictor = AggregatePredictor(args=args)
         self.select_predictor = SelectPredictor(args=args)

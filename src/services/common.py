@@ -3,6 +3,7 @@ import pickle
 import os.path
 
 import numpy as np
+from itertools import chain
 
 import constants.main_constants as const
 
@@ -21,18 +22,21 @@ def load_data(data_dir, split='train', debug=False):
     data_path = data_dir + split + '_tok.jsonl'
     table_path = data_dir + split + '_tok.tables.jsonl'
     db_path = data_dir + split + '.db'
-    data = []
+    query_list = []
+    sql_list = []
     table_data = {}
     with open(data_path) as f:
         for idx, line in enumerate(f):
             if debug and idx > const.DEBUG_DATA_SIZE:
                 break
-            data.append(json.loads(line.strip()))
+            data = json.loads(line.strip())
+            query_list.append(data['question_tok'])
+            sql_list.append(data['sql'])
     with open(table_path) as f:
         for _, line in enumerate(f):
             t_data = json.loads(line.strip())
             table_data[t_data['id']] = t_data
-    return data, table_data, db_path
+    return query_list, sql_list, table_data, db_path
 
 
 def make_token_to_index(data, embedding, use_extra_tokens=True, load_if_exists=False):
@@ -52,12 +56,12 @@ def make_token_to_index(data, embedding, use_extra_tokens=True, load_if_exists=F
             token_weights.append(embedding.vector(const.END_TOKEN))
             idx += 3
 
-        for d in data:
-            for token in d['question_tok']:
-                if token not in token_to_index:
-                    token_to_index[token] = idx
-                    token_weights.append(embedding.vector(token))
-                    idx += 1
+        unique_tokens = set(chain.from_iterable(data))
+        for token in unique_tokens:
+            token_to_index[token] = idx
+            token_weights.append(embedding.vector(token))
+            idx += 1
+
         token_weights = np.array(token_weights)
         save_object(token_to_index, const.TOKEN_TO_IDX_SAVE)
         save_object(token_weights, const.TOKEN_WEIGHTS_SAVE)
