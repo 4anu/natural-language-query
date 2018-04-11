@@ -1,6 +1,6 @@
 from argparse import ArgumentParser
 
-from models.data import DataModel
+from models.data import QueryDataModel, SQLDataModel
 from services.common import load_data, make_token_to_index
 from services.logger import Logger
 from models.glove import Glove
@@ -10,12 +10,20 @@ import constants.main_constants as const
 parser = ArgumentParser()
 parser.add_argument('--gpu', action='store_true',
                     help='Use GPU')
+parser.add_argument('--batch_size', default=32,
+                    help='Batch Size')
+parser.add_argument('--lr', default=0.02,
+                    help='Learning Rate')
+parser.add_argument('--decay', default=0.97,
+                    help='Decay for Learning Rate')
+parser.add_argument('--epochs', default=30,
+                    help='Number of Epochs')
 parser.add_argument('--save', default='save',
                     help='Model save directory.')
 parser.add_argument('--debug', action='store_true',
                     help='Fast debugging mode.')
 parser.add_argument('--hard_reload', action='store_true',
-                    help='All pre-processing will be done from scratch.')
+                    help='Pre-processing will be done from scratch.')
 args = parser.parse_args()
 logger = Logger()
 
@@ -30,12 +38,14 @@ logger.end_timer()
 glove = Glove(file_name=const.GLOVE, load_if_exists=(True and not args.hard_reload))
 args.emb_size = glove.length
 
-
 logger.start_timer('Making token dictionary..')
-token_to_index, token_weights = make_token_to_index(data=train_query_list, embedding=glove, use_extra_tokens=True,
-                                                    load_if_exists=(True and not args.hard_reload))
+token_to_index, token_weights = make_token_to_index(data=train_query_list, embedding=glove, use_extra_tokens=True, load_if_exists=(True and not args.hard_reload))
 logger.end_timer()
 
-data_model = DataModel(query_list=train_query_list, token_to_index=token_to_index)
+logger.start_timer('Making data models..')
+query_data_model = QueryDataModel(query_list=train_query_list, token_to_index=token_to_index, batch_size=args.batch_size)
+sql_data_model = SQLDataModel(sql_list=train_sql_list, batch_size=args.batch_size)
+logger.end_timer()
 
-nlq_model = NLQModel(embedding=glove, args=args, token_to_index=token_to_index, token_weights=token_weights)
+nlq_model = NLQModel(args=args, token_to_index=token_to_index, token_weights=token_weights)
+nlq_model.start_train(query_data_model, sql_data_model)
