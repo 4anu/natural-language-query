@@ -23,6 +23,8 @@ DEBUG_DATA_SIZE = 1000
 DEBUG_BATCH_SIZE = 16
 
 # Model Constants
+AGG_EMB_SAVE_MODEL = '../save/agg_emb_model_epoch_{:d}'
+AGG_SAVE_MODEL = '../save/agg_model_epoch_{:d}'
 # Aggregate Predictor Parameters
 AGG_CNN_NUM_FILTERS = EMBEDDING_SIZE  # Number of filters should be equal to embedding size
 AGG_CNN_KERNEL_SIZE = (5, EMBEDDING_SIZE)  # Kernel Width should be equal to embedding size

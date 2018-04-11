@@ -10,7 +10,7 @@ import constants.main_constants as const
 parser = ArgumentParser()
 parser.add_argument('--gpu', action='store_true',
                     help='Use GPU')
-parser.add_argument('--batch_size', default=32,
+parser.add_argument('--batch_size', default=64,
                     help='Batch Size')
 parser.add_argument('--lr', default=0.02,
                     help='Learning Rate')

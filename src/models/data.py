@@ -13,10 +13,10 @@ class QueryDataModel(data_utils.DataLoader):
                             + [const.END_IDX]
             encoded_query_matrix[idx, 0: len(encoded_query)] = encoded_query
 
-        super(QueryDataModel, self).__init__(encoded_query_matrix, batch_size)
+        super(QueryDataModel, self).__init__(encoded_query_matrix, batch_size, drop_last=True)
 
 
 class SQLDataModel(data_utils.DataLoader):
     def __init__(self, sql_list, batch_size=const.BATCH_SIZE):
         aggregate_data = [sql['agg'] for sql in sql_list]
-        super(SQLDataModel, self).__init__(aggregate_data, batch_size)
+        super(SQLDataModel, self).__init__(aggregate_data, batch_size, drop_last=True)

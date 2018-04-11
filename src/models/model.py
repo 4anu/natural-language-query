@@ -4,6 +4,7 @@ from torch.autograd import Variable
 
 from models.embedding import EmbeddingLayer
 from models.predictors import AggregatePredictor, SelectPredictor, ConditionPredictor
+import constants.main_constants as const
 
 
 class NLQModel(nn.Module):
@@ -34,13 +35,6 @@ class NLQModel(nn.Module):
 
         return self.aggregate_predictor.forward(input)
 
-    def calculate_loss(self, true_output, predicted_logits):
-        true_output = Variable(torch.from_numpy(true_output))
-        if self.args.gpu:
-            true_output = true_output.cuda()
-
-        return self.cross_entropy_loss(predicted_logits, true_output)
-
     def start_train(self, query_data_model, sql_data_model):
         num_batches = len(query_data_model)
         total_batches = self.args.epochs * num_batches
@@ -59,6 +53,8 @@ class NLQModel(nn.Module):
                     loss = loss.data.cuda().numpy()[0]
                 else:
                     loss = loss.data.cpu().numpy()[0]
-                print('{:d}/{:d} | Epoch {:d} | Loss: {:.2f}'.format(b * (e+1), total_batches, e+1, loss))
+                print('{:d}/{:d} | Epoch {:d} | Loss: {:.3f}'.format(b * (e+1), total_batches, e+1, loss))
+            torch.save(self.aggregate_embedding_layer.state_dict(), const.AGG_EMB_SAVE_MODEL.format(e+1))
+            torch.save(self.aggregate_predictor.state_dict(), const.AGG_SAVE_MODEL.format(e+1))
 
 # TODO: Make all Predictors, forward function and loss.
