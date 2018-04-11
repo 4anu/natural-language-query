@@ -2,10 +2,10 @@ LOG_FILE = 'LogFile-{%}.log'
 BATCH_SIZE = 64
 
 # Glove and Embedding Constants
-GLOVE = '../glove/glove.6B.50d.txt'
-GLOVE_SAVE = '../glove/loaded.pkl'
 GLOVE_TOKENS = 6  # Billion
-EMBEDDING_SIZE = 50  # Dimensions
+EMBEDDING_SIZE = 300  # Dimensions
+GLOVE = '../glove/glove.{}B.{}d.txt'.format(GLOVE_TOKENS, EMBEDDING_SIZE)
+GLOVE_SAVE = '../glove/loaded.pkl'
 TOKEN_TO_IDX_SAVE = '../data/token_to_index.pkl'
 TOKEN_WEIGHTS_SAVE = '../data/token_weights.pkl'
 UNK_TOKEN = '<UNK>'
