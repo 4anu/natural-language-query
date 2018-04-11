@@ -29,8 +29,8 @@ AGG_SAVE_MODEL = '../save/agg_model_epoch_{:d}'
 AGG_CNN_NUM_FILTERS = EMBEDDING_SIZE  # Number of filters should be equal to embedding size
 AGG_CNN_KERNEL_SIZE = (5, EMBEDDING_SIZE)  # Kernel Width should be equal to embedding size
 
-RNN_LAYERS = 1
+RNN_LAYERS = 2
 RNN_SIZE = 256
 
-DROPOUT = .3
+DROPOUT = .2
 

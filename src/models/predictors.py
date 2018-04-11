@@ -40,7 +40,8 @@ class AggregatePredictor(nn.Module):
     def forward(self, input):
         input_embeddings = self.embedding_layer.get_embedding(input)
 
-        cnn_input = self.dropout(input_embeddings).unsqueeze(1)
+        # cnn_input = self.dropout(input_embeddings).unsqueeze(1)
+        cnn_input = input_embeddings.unsqueeze(1)
         cnn_output = self.cnn_layer(cnn_input)
         cnn_output = funct.relu(cnn_output).squeeze(3)
         cnn_output = torch.transpose(cnn_output, 1, 2)
