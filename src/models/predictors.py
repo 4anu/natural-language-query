@@ -21,20 +21,20 @@ class AggregatePredictor(nn.Module):
         self.args = args
         self.embedding_layer = embedding_layer
 
-        self.dropout = nn.Dropout(const.DROPOUT)
+        self.dropout = nn.Dropout(const.AGG_CNN_DROPOUT)
         self.cnn_layer = nn.Conv2d(in_channels=1, out_channels=const.AGG_CNN_NUM_FILTERS,
-                                   kernel_size=const.AGG_CNN_KERNEL_SIZE, stride=1,
+                                   kernel_size=const.AGG_CNN_KERNEL_SIZE, stride=const.AGG_CNN_STRIDE,
                                    padding=(int(const.AGG_CNN_KERNEL_SIZE[0] / 2), 0))
 
-        self.rnn_layer = nn.GRU(args.emb_size, hidden_size=const.RNN_SIZE, num_layers=const.RNN_LAYERS,
-                                dropout=const.DROPOUT)
-        self.rnn_hidden_state = init_hidden(const.RNN_LAYERS, args.batch_size, const.RNN_SIZE, args.gpu)
+        self.rnn_layer = nn.GRU(args.emb_size, hidden_size=const.AGG_RNN_SIZE, num_layers=const.AGG_RNN_LAYERS,
+                                dropout=const.AGG_RNN_DROPOUT)
+        self.rnn_hidden_state = init_hidden(const.AGG_RNN_LAYERS, args.batch_size, const.AGG_RNN_SIZE, args.gpu)
 
-        self.dense_layer_1 = nn.Linear(const.RNN_SIZE, int(const.RNN_SIZE / 2))
-        self.dense_layer_2 = nn.Linear(int(const.RNN_SIZE / 2), len(sql_const.AGG_OPERATORS))
+        self.dense_layer_1 = nn.Linear(const.AGG_RNN_SIZE, int(const.AGG_RNN_SIZE / 2))
+        self.dense_layer_2 = nn.Linear(int(const.AGG_RNN_SIZE / 2), len(sql_const.AGG_OPERATORS))
 
     def reset_hidden_state(self):
-        self.rnn_hidden_state = init_hidden(const.RNN_LAYERS, self.args.batch_size, const.RNN_SIZE,
+        self.rnn_hidden_state = init_hidden(const.AGG_RNN_LAYERS, self.args.batch_size, const.AGG_RNN_SIZE,
                                             self.args.gpu)
 
     def forward(self, input):
@@ -52,8 +52,8 @@ class AggregatePredictor(nn.Module):
         rnn_output = torch.transpose(rnn_output, 1, 2)
         rnn_output = funct.max_pool1d(rnn_output, rnn_output.size(2)).squeeze(2)
 
-        dense_layer_1_output = self.dense_layer_1(funct.tanh(rnn_output))
-        dense_layer_2_output = self.dense_layer_2(funct.tanh(dense_layer_1_output))
+        dense_layer_1_output = self.dense_layer_1(funct.sigmoid(rnn_output))
+        dense_layer_2_output = self.dense_layer_2(funct.sigmoid(dense_layer_1_output))
         return dense_layer_2_output
 
 

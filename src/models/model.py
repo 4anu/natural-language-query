@@ -2,11 +2,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
-from sklearn.metrics import accuracy_score
 
 from models.embedding import EmbeddingLayer
 from models.predictors import AggregatePredictor, SelectPredictor, ConditionPredictor
 import constants.main_constants as const
+import services.torch as torch_services
+from services.logger import Logger
 
 
 class NLQModel(nn.Module):
@@ -37,13 +38,29 @@ class NLQModel(nn.Module):
 
         return self.aggregate_predictor.forward(input)
 
-    def start_train(self, query_data_model, sql_data_model):
-        num_batches = len(query_data_model)
+    def accuracy(self, query_model, sql_model):
+        true_set = np.array([])
+        predicted_set = np.array([])
+        for b, (input, true_output) in enumerate(zip(query_model, sql_model)):
+            self.aggregate_predictor.reset_hidden_state()
+            true_output = Variable(true_output.long())
+            if self.args.gpu:
+                true_output = true_output.cuda()
+            logits = self.forward(input)
+            logits = torch_services.get_numpy(logits, self.args.gpu)
+            predicted_set = np.append(predicted_set, np.argmax(logits, 1))
+            true_set = torch_services.append(true_set, true_output, self.args.gpu)
+        return 100 * torch_services.accuracy_score(true_set, predicted_set)
+
+    def start_train(self, train_query_model, train_sql_model, dev_query_model, dev_sql_model):
+        logger = Logger()
+        num_batches = len(train_query_model)
         total_batches = self.args.epochs * num_batches
+        best_val_accuracy = 0
         try:
             for e in range(self.args.epochs):
-                epoch_accuracy = 0
-                for b, (input, true_output) in enumerate(zip(query_data_model, sql_data_model)):
+                logger.start_timer('Epoch %d training..' % (e + 1))
+                for b, (input, true_output) in enumerate(zip(train_query_model, train_sql_model)):
                     self.aggregate_predictor.reset_hidden_state()
                     true_output = Variable(true_output.long())
                     if self.args.gpu:
@@ -53,25 +70,23 @@ class NLQModel(nn.Module):
                     self.optimizer.zero_grad()
                     loss.backward()
                     self.optimizer.step()
-                    if self.args.gpu:
-                        loss = loss.data.cuda().cpu()[0]
-                        logits = logits.data.cuda().cpu()
-                        true_output = true_output.data.cuda().cpu()
-                    else:
-                        loss = loss.data.cpu().numpy()[0]
-                        logits = logits.data.cpu().numpy()
-                        true_output = true_output.data.cpu().numpy()
-                    predicted_output = np.argmax(logits, 1)
-                    accuracy = 100 * accuracy_score(predicted_output, true_output)
-                    epoch_accuracy += accuracy * self.args.batch_size
-                    print('{:d}/{:d} | Epoch {:d} | Loss: {:.3f} | Accuracy: {:.2f}'.format(b * (e+1), total_batches, e+1, loss, accuracy))
-                if (e+1) % 5 == 0:
-                    torch.save(self.aggregate_embedding_layer.state_dict(), const.AGG_EMB_SAVE_MODEL.format(e+1))
-                    torch.save(self.aggregate_predictor.state_dict(), const.AGG_SAVE_MODEL.format(e+1))
-                print('Epoch {:d} finished with Accuracy: {:.2f}'.format(e+1, epoch_accuracy/num_batches))
-                # TODO: Save model based on dev set accuracy.
+                    loss = torch_services.get_numpy(loss, self.args.gpu)[0]
+                    accuracy = 100 * torch_services.accuracy(true_output, logits)
+                    print('Batch [{:d}/{:d}] | Epoch {:d} | Loss: {:.3f} | Accuracy: {:.2f}%'.format((b + 1) * (e + 1), total_batches, e + 1, loss, accuracy))
+
+                logger.end_timer('Epoch {:d}'.format(e + 1))
+                print('Calculating Accuracy..')
+                train_accuracy = self.accuracy(train_query_model, train_sql_model)
+                val_accuracy = self.accuracy(dev_query_model, dev_sql_model)
+                print('Train Accuracy: {:.2f}% | Validation Accuracy: {:.2f}%}'.format(train_accuracy, val_accuracy))
+                if val_accuracy > best_val_accuracy:
+                    logger.start_timer('Saving the best model..')
+                    torch.save(self.aggregate_embedding_layer.state_dict(), const.AGG_EMB_SAVE_MODEL.format(val_accuracy))
+                    torch.save(self.aggregate_predictor.state_dict(), const.AGG_SAVE_MODEL.format(val_accuracy))
+                    best_val_accuracy = val_accuracy
+                    logger.end_timer('Save Complete!')
         except KeyboardInterrupt:
-            print('-' * 100)
+            print('-' * 55)
             print('Exiting from training..')
 
 # TODO: Make all Predictors, forward function and loss.

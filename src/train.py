@@ -43,9 +43,11 @@ token_to_index, token_weights = make_token_to_index(data=train_query_list, embed
 logger.end_timer()
 
 logger.start_timer('Making data models..')
-query_data_model = QueryDataModel(query_list=train_query_list, token_to_index=token_to_index, batch_size=args.batch_size)
-sql_data_model = SQLDataModel(sql_list=train_sql_list, batch_size=args.batch_size)
+train_query_model = QueryDataModel(query_list=train_query_list, token_to_index=token_to_index, batch_size=args.batch_size)
+train_sql_model = SQLDataModel(sql_list=train_sql_list, batch_size=args.batch_size)
+dev_query_model = QueryDataModel(query_list=train_query_list, token_to_index=token_to_index, batch_size=args.batch_size)
+dev_sql_model = SQLDataModel(sql_list=train_sql_list, batch_size=args.batch_size)
 logger.end_timer()
 
 nlq_model = NLQModel(args=args, token_to_index=token_to_index, token_weights=token_weights)
-nlq_model.start_train(query_data_model, sql_data_model)
+nlq_model.start_train(train_query_model, train_sql_model, dev_query_model, dev_sql_model)
