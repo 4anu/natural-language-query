@@ -26,7 +26,6 @@ class NLQModel(nn.Module):
 
         self.softmax = nn.Softmax()
         self.cross_entropy_loss = nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.Adam(self.parameters(), lr=args.lr, weight_decay=args.decay)
 
         if args.gpu:
             self.cuda()
@@ -53,7 +52,7 @@ class NLQModel(nn.Module):
             true_set = torch_services.append(true_set, true_output, self.args.gpu)
         return 100 * torch_services.accuracy_score(true_set, predicted_set)
 
-    def start_train(self, train_query_model, train_sql_model, dev_query_model, dev_sql_model):
+    def start_train(self, optimizer, train_query_model, train_sql_model, dev_query_model, dev_sql_model):
         logger = Logger()
         num_batches = len(train_query_model)
         total_batches = self.args.epochs * num_batches
@@ -62,7 +61,7 @@ class NLQModel(nn.Module):
             for e in range(self.args.epochs):
                 logger.start_timer('Epoch %d training..' % (e + 1))
                 for b, (input, true_output) in enumerate(zip(train_query_model, train_sql_model)):
-                    self.optimizer.zero_grad()
+                    optimizer.zero_grad()
                     self.aggregate_predictor.reset_hidden_state()
                     true_output = Variable(true_output.long())
                     if self.args.gpu:
@@ -70,7 +69,7 @@ class NLQModel(nn.Module):
                     logits = self.forward(input)
                     loss = self.cross_entropy_loss(logits, true_output)
                     loss.backward()
-                    self.optimizer.step()
+                    optimizer.step()
                     loss = torch_services.get_numpy(loss, self.args.gpu)[0]
                     accuracy = 100 * torch_services.accuracy(true_output, logits)
                     print('Batch [{:d}/{:d}] | Epoch {:d} | Loss: {:.3f} | Accuracy: {:.2f}%'.format((b + 1) * (e + 1), total_batches, e + 1, loss, accuracy))

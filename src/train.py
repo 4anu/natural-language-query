@@ -1,5 +1,7 @@
 from argparse import ArgumentParser
 
+import torch
+
 from models.data import QueryDataModel, SQLDataModel
 from services.common import load_data, make_token_to_index
 from services.logger import Logger
@@ -50,4 +52,5 @@ dev_sql_model = SQLDataModel(sql_list=dev_sql_list, batch_size=args.batch_size)
 logger.end_timer()
 
 nlq_model = NLQModel(args=args, token_to_index=token_to_index, token_weights=token_weights)
-nlq_model.start_train(train_query_model, train_sql_model, dev_query_model, dev_sql_model)
+optimizer = torch.optim.Adam(nlq_model.parameters(), lr=args.lr, weight_decay=args.decay)
+nlq_model.start_train(optimizer, train_query_model, train_sql_model, dev_query_model, dev_sql_model)
