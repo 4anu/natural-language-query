@@ -30,8 +30,9 @@ class AggregatePredictor(nn.Module):
                                 dropout=const.AGG_RNN_DROPOUT)
         self.rnn_hidden_state = init_hidden(const.AGG_RNN_LAYERS, args.batch_size, const.AGG_RNN_SIZE, args.gpu)
 
-        self.dense_layer_1 = nn.Linear(const.AGG_RNN_SIZE, int(const.AGG_RNN_SIZE / 2))
-        self.dense_layer_2 = nn.Linear(int(const.AGG_RNN_SIZE / 2), len(sql_const.AGG_OPERATORS))
+        # self.dense_layer_1 = nn.Linear(const.AGG_RNN_SIZE, int(const.AGG_RNN_SIZE / 2))
+        # self.dense_layer_2 = nn.Linear(int(const.AGG_RNN_SIZE / 2), len(sql_const.AGG_OPERATORS))
+        self.dense_layer_1 = nn.Linear(const.AGG_RNN_SIZE, len(sql_const.AGG_OPERATORS))
 
     def reset_hidden_state(self):
         self.rnn_hidden_state = init_hidden(const.AGG_RNN_LAYERS, self.args.batch_size, const.AGG_RNN_SIZE,
@@ -53,8 +54,9 @@ class AggregatePredictor(nn.Module):
         rnn_output = funct.max_pool1d(rnn_output, rnn_output.size(2)).squeeze(2)
 
         dense_layer_1_output = self.dense_layer_1(funct.sigmoid(rnn_output))
-        dense_layer_2_output = self.dense_layer_2(funct.sigmoid(dense_layer_1_output))
-        return dense_layer_2_output
+        net_out = funct.sigmoid(dense_layer_1_output)
+        # dense_layer_2_output = self.dense_layer_2(funct.sigmoid(dense_layer_1_output))
+        return net_out
 
 
 class ConditionPredictor(nn.Module):
