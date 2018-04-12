@@ -10,7 +10,7 @@ import constants.main_constants as const
 parser = ArgumentParser()
 parser.add_argument('--gpu', action='store_true',
                     help='Use GPU')
-parser.add_argument('--batch_size', type=int, default=128,
+parser.add_argument('--batch_size', type=int, default=32,
                     help='Batch Size')
 parser.add_argument('--lr', type=float, default=0.01,
                     help='Learning Rate')
@@ -45,8 +45,8 @@ logger.end_timer()
 logger.start_timer('Making data models..')
 train_query_model = QueryDataModel(query_list=train_query_list, token_to_index=token_to_index, batch_size=args.batch_size)
 train_sql_model = SQLDataModel(sql_list=train_sql_list, batch_size=args.batch_size)
-dev_query_model = QueryDataModel(query_list=train_query_list, token_to_index=token_to_index, batch_size=args.batch_size)
-dev_sql_model = SQLDataModel(sql_list=train_sql_list, batch_size=args.batch_size)
+dev_query_model = QueryDataModel(query_list=dev_query_list, token_to_index=token_to_index, batch_size=args.batch_size)
+dev_sql_model = SQLDataModel(sql_list=dev_sql_list, batch_size=args.batch_size)
 logger.end_timer()
 
 nlq_model = NLQModel(args=args, token_to_index=token_to_index, token_weights=token_weights)

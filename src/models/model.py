@@ -48,7 +48,8 @@ class NLQModel(nn.Module):
                 true_output = true_output.cuda()
             logits = self.forward(input)
             logits = torch_services.get_numpy(logits, self.args.gpu)
-            predicted_set = np.append(predicted_set, np.argmax(logits, 1))
+            predicted_output = np.argmax(logits, 1)
+            predicted_set = np.append(predicted_set, predicted_output)
             true_set = torch_services.append(true_set, true_output, self.args.gpu)
         return 100 * torch_services.accuracy_score(true_set, predicted_set)
 
