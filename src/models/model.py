@@ -62,13 +62,13 @@ class NLQModel(nn.Module):
             for e in range(self.args.epochs):
                 logger.start_timer('Epoch %d training..' % (e + 1))
                 for b, (input, true_output) in enumerate(zip(train_query_model, train_sql_model)):
+                    self.optimizer.zero_grad()
                     self.aggregate_predictor.reset_hidden_state()
                     true_output = Variable(true_output.long())
                     if self.args.gpu:
                         true_output = true_output.cuda()
                     logits = self.forward(input)
                     loss = self.cross_entropy_loss(logits, true_output)
-                    self.optimizer.zero_grad()
                     loss.backward()
                     self.optimizer.step()
                     loss = torch_services.get_numpy(loss, self.args.gpu)[0]
