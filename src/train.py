@@ -10,13 +10,13 @@ import constants.main_constants as const
 parser = ArgumentParser()
 parser.add_argument('--gpu', action='store_true',
                     help='Use GPU')
-parser.add_argument('--batch_size', default=64,
+parser.add_argument('--batch_size', type=int, default=128,
                     help='Batch Size')
-parser.add_argument('--lr', default=0.01,
+parser.add_argument('--lr', type=float, default=0.01,
                     help='Learning Rate')
-parser.add_argument('--decay', default=0.95,
+parser.add_argument('--decay', type=float, default=0.95,
                     help='Decay for Learning Rate')
-parser.add_argument('--epochs', default=50,
+parser.add_argument('--epochs', type=int, default=50,
                     help='Number of Epochs')
 parser.add_argument('--save', default='save',
                     help='Model save directory.')

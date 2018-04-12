@@ -78,7 +78,7 @@ class NLQModel(nn.Module):
                 print('Calculating Accuracy..')
                 train_accuracy = self.accuracy(train_query_model, train_sql_model)
                 val_accuracy = self.accuracy(dev_query_model, dev_sql_model)
-                print('Train Accuracy: {:.2f}% | Validation Accuracy: {:.2f}%}'.format(train_accuracy, val_accuracy))
+                print('Train Accuracy: {:.2f}% | Validation Accuracy: {:.2f}%'.format(train_accuracy, val_accuracy))
                 if val_accuracy > best_val_accuracy:
                     logger.start_timer('Saving the best model..')
                     torch.save(self.aggregate_embedding_layer.state_dict(), const.AGG_EMB_SAVE_MODEL.format(val_accuracy))
