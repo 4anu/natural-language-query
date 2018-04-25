@@ -2,6 +2,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+from torch.nn.utils import clip_grad_norm
 
 from models.embedding import EmbeddingLayer
 from models.predictors import AggregatePredictor, SelectPredictor, ConditionPredictor
@@ -70,6 +71,7 @@ class NLQModel(nn.Module):
                     loss = self.cross_entropy_loss(logits, true_output)
                     loss.backward()
                     optimizer.step()
+                    clip_grad_norm(self.parameters(), const.AGG_GRAD_CLIP)
                     loss = torch_services.get_numpy(loss, self.args.gpu)[0]
                     accuracy = 100 * torch_services.accuracy(true_output, logits)
                     print('Batch [{:d}/{:d}] | Epoch {:d} | Loss: {:.3f} | Accuracy: {:.2f}%'.format((b + 1) * (e + 1), total_batches, e + 1, loss, accuracy))

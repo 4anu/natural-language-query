@@ -2,7 +2,7 @@ LOG_FILE = 'LogFile-{%}.log'
 BATCH_SIZE = 64
 
 # Glove and Embedding Constants
-GLOVE_TOKENS = 6  # Billion
+GLOVE_TOKENS = 42  # Billion
 EMBEDDING_SIZE = 300  # Dimensions
 GLOVE = '../glove/glove.{}B.{}d.txt'.format(GLOVE_TOKENS, EMBEDDING_SIZE)
 GLOVE_SAVE = '../glove/loaded.pkl'
@@ -26,6 +26,7 @@ DEBUG_BATCH_SIZE = 16
 AGG_EMB_SAVE_MODEL = '../save/agg_emb_model_accuracy_{:.2f}'
 AGG_SAVE_MODEL = '../save/agg_model_accuracy_{:.2f}'
 # Aggregate Predictor Parameters
+AGG_GRAD_CLIP = 0.1
 AGG_CNN_NUM_FILTERS = EMBEDDING_SIZE  # Number of filters should be equal to embedding size
 AGG_CNN_KERNEL_SIZE = (3, EMBEDDING_SIZE)  # Kernel Width should be equal to embedding size
 AGG_CNN_STRIDE = 1
